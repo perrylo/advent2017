@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+let rules2x2 = {};
+let rules3x3 = {};
+let grid = ['.#.', '..#', '###'];
+fetch('day21.data')
+  .then(r => r.text())
+  .then(r => {
+    const tmp = r.split('\n').map(line => line.split(' => '));
+    for (t of tmp) {
+      if (t[0].length === 5) {
+        rules2x2[t[0]] = t[1].split('/');
+      } else {
+        rules3x3[t[0]] = t[1].split('/');
+      }
+    }
+
+    part1();
+
+  });
+
+function part1() {
+  // Do iterations
+  for (let i=0; i<18; ++i) {
+    if (grid.length % 2 === 0) {
+      grid = getTransform(2, rules2x2);
+    } else {
+      grid = getTransform(3, rules3x3);
+    }
+    console.log(grid);
+  }
+
+  // Count ons
+  const finalStr = grid.join('');
+  let counter = 0;
+  for (letter of finalStr) {
+    if (letter === '#') ++counter;
+  }
+  console.log(`Total on: ${counter}`);
+
+
+  function getTransform(subsetSize, ruleset) {
+    const size = grid.length;
+    const newGrid = [];
+
+    grid = grid.map(row => chunkString(row, subsetSize));
+    for (let r = 0; r < size / subsetSize; ++r) {
+      for (let c = 0; c < size / subsetSize; ++c) {
+        const subset = [];
+        for (let t = 0; t < subsetSize; ++t) {
+          subset.push(grid[r * subsetSize + t][c]);
+        }
+
+        for (const rule of Object.keys(ruleset)) {
+          const isMatch = checkMatch(rule, subset);
+          if (isMatch) {
+            const newSubsetSize = subsetSize + 1;
+            for (let rc = 0; rc < ruleset[rule].length; ++rc) {
+              if (!newGrid[r * newSubsetSize + rc]) {
+                newGrid[r * newSubsetSize + rc] = [];
+              }
+              newGrid[r * newSubsetSize + rc].push(ruleset[rule][rc]);
+            }
+          }
+        }
+      }
+    }
+
+    return newGrid.map(line => line.join(''));
+  }
+
+}
+
+
+function chunkString(str, chunkSize) {
+  const arr = [];
+  for (let i=0; i<str.length/chunkSize; ++i) {
+    arr.push(str.substr(i*chunkSize, chunkSize));
+  }
+  return arr;
+}
+
+
+
+
+function checkMatch(rule, arr) {
+  let isMatch = false;
+  const memoize = {};
+
+  // no flip
+  if (rule == arr.join('/')) isMatch = true;
+  isMatch = isMatch || _checkRotates(arr);
+
+  // horz flip
+  const rra = arr.map(a => a.split('').reverse().join(''));
+  if (rule == rra.join('/')) isMatch = true;
+  isMatch = isMatch || _checkRotates(rra);
+  
+  // vert flip - same as horz flip and rotated, can skip
+  /*
+  const varr = arr.reverse(); 
+  if (rule == varr.join('/')) isMatch = true;
+  isMatch =  _checkRotates(varr);
+  */
+  
+  // horz & vert flip - same as no flip and rotated, can skip
+  /*
+  const vrra = rra.reverse(); 
+  if (rule == vrra.join('/')) isMatch = true;
+  isMatch =  _checkRotates(vrra);
+  */
+
+  function _checkRotates(a) {
+    const r90 = rotateCW(a);
+    const r180 = rotateCW(r90);
+    const r270 = rotateCW(r180);
+/*
+console.table(a);
+console.table(r90);
+console.table(r180);
+console.table(r270);
+console.log('-----');
+*/
+    return rule===r90.join('/') || rule===r180.join('/') || rule===r270.join('/');
+  }
+
+  return isMatch;
+}
+/* Unit tests!
+console.log(checkMatch('.#./..#/###', ['.#.', '..#', '###']));
+console.log(checkMatch('.#./..#/###', ['.#.', '#..', '###']));
+console.log(checkMatch('.#./..#/###', ['.#.', '..#', '###']));
+console.log(checkMatch('.#./..#/###', ['.#.', '..#', '###']));
+*/
+
+
+
+function rotateCW(arr) {
+  const rotated = [];
+  const size = arr.length;
+  for (let i=0; i<size; ++i) {
+    for (let j=size-1; j>-1; --j) {
+      rotated[i] = (rotated[i] || '') + arr[j][i];
+    }
+  }
+  return rotated;
+}
+/* Unit tests!
+const testrotate = ['##', '..'];
+console.table(testrotate);
+console.log('CW');
+console.table(rotateCW(testrotate));
+*/
+
+
+</script>
+
+</body>
+</html>

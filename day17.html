@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+const steps = 371;
+let buffer = [0];
+let bufferSize = 1;
+let currentPosition = 0;
+
+function part1() {
+  for (let i=1; i<2018; ++i) {
+    currentPosition = ((currentPosition + steps) % buffer.length)+1;
+    buffer = [...buffer.slice(0, currentPosition), i, ...buffer.slice(currentPosition)];
+  }
+  console.log(`Number after 2017: ${buffer[currentPosition+1]}`);
+  console.log(buffer.slice(currentPosition-3, currentPosition+4));
+  console.log(buffer.slice(0, 4));
+}
+//part1();
+
+function part2() {
+  // Pretend we have a buffer rather than create one.
+  // Remember each time we land at position 0
+  let index1 = null;
+  for (let i = 1; i < 50000001; ++i) {
+    currentPosition = ((currentPosition + steps) % bufferSize) + 1;
+    if (currentPosition === 1) {
+      index1 = i;
+    }
+    ++bufferSize;
+
+    if (i%100000===0) console.log(`${i}... working`);
+  }
+
+  //0 is at index 0, it can never move so...
+  console.log(`Number at index 1: ${index1}`);
+}
+part2();
+
+</script>
+
+</body>
+</html>

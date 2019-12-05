@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+//let currentA = 65;
+//let currentB = 8921;
+let currentA = 289;
+let currentB = 629;
+
+let matches = 0;
+for (let c=0; c<5000000; ++c) {
+  currentA = procedure(currentA, 16807, 4);
+  currentB = procedure(currentB, 48271, 8);
+
+  const binA = numToBin(currentA);
+  const binB = numToBin(currentB);
+
+//console.log(binA);
+//console.log(binB);
+//console.log('----');
+
+  if (binA.substr(binA.length-16) === binB.substr(binB.length-16)) {
+    ++matches;
+  }
+
+  if (c%100000 === 0) {
+    console.log(`${c}... working`);
+  }
+}
+console.log(matches);
+
+
+
+
+function procedure(val, factor, multiple) {
+  let remainder = getRemainder(val, factor);
+  if (multiple) {
+    let limiter = 0;
+    while (remainder % multiple !== 0) {
+      remainder = getRemainder(remainder, factor);
+    }
+  }
+  return remainder;
+
+  function getRemainder(v, f) {
+    return (v * f) % 2147483647;
+  }
+}
+
+function numToBin(num) {
+  const bin = `00000000000000000000000000000000${parseInt(num, 10).toString(2)}`;
+  return bin.substr(bin.length-32);
+}
+
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+const registers = {};
+for (const letter of 'abcdefgh'.split('')) {
+  registers[letter] = 0;
+}
+registers.a = 1;
+
+let instructions;
+fetch('day23.data')
+  .then(r => r.text())
+  .then(r => {
+    instructions = r.split('\n');
+
+    part2();
+  });
+
+function part2() {
+  let count = 0;
+  for (let i = 108100; i<125101; i+=17) {
+    for (let j = 2; j<i; ++j) {
+        if (i % j ===0) {
+          ++count;
+          break;
+        }
+    }
+  }
+  console.log(count);
+}
+
+function part1() {
+  let i = 0;
+  let limiter = 0;
+  while(instructions[i] && ++limiter<10000) {
+console.log(i, JSON.stringify(registers), instructions[i])
+    i = doInstruction(i);
+    if (limiter%1000000===0) console.log(`iteration ${limiter}... working`);
+  }
+  console.log(`End i: ${i}.  mul was done ${mulCount} times`);
+  console.log(`value of h: ${registers.h}`);
+}
+
+let mulCount = 0;
+function doInstruction(i) {
+  let [inst, tar, op] = instructions[i].split(' ');
+  const delta = parseInt(registers[op] !== undefined ? registers[op] : op, 10);
+
+  switch(inst) {
+    case 'set':
+      registers[tar] = delta;
+      break;
+    case 'sub':
+      registers[tar] -= delta;
+      break;
+    case 'mul':
+      registers[tar] *= delta;
+      ++mulCount;
+      break;
+    case 'jnz':
+      const jumpCheck = parseInt(registers[tar] !== undefined ? registers[tar] : tar, 10);
+//console.log(registers[tar], tar,jumpCheck)      
+      if (jumpCheck !== 0) {
+        return i + delta;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return i + 1;
+}
+
+</script>
+
+</body>
+</html>

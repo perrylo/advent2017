@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+//const blocks = [0, 2, 7, 0];
+const blocks = [14, 0, 15, 12, 11, 11, 3, 5, 1, 6, 8, 4, 9, 1, 8, 4];
+
+/* part 2 */
+let limiter = 0;
+let hasOccurredBefore = false;
+
+const statesAge = {};
+function captureState() {
+  // convert state to unique hash
+  const str = blocks.join('_');
+
+  // see if state happened before
+  const hasOccurredBefore = statesAge[str] !== undefined;
+  if (!hasOccurredBefore) {
+    statesAge[str] = 0;
+  } else {
+    console.log(`${statesAge[str]} max age`);
+  }
+
+  // age all existing states
+  for (key of Object.keys(statesAge)) {
+    statesAge[key] += 1;
+  }
+
+  return hasOccurredBefore;
+}
+
+
+// capture start state
+captureState();
+while (!hasOccurredBefore) {
+  ++limiter;
+
+  // get index of largest memory block
+  let indexOfLargest = 0;
+  for (let i=0; i<blocks.length; ++i) {
+    if (blocks[indexOfLargest] < blocks[i]) {
+      indexOfLargest = i;
+    }
+  }
+
+  // play mankala
+  const count = blocks[indexOfLargest];
+  let indexToAddTo = indexOfLargest;
+  blocks[indexOfLargest] = 0;
+  for (let i=0; i<count; ++i) {
+    ++indexToAddTo;
+    if (indexToAddTo >= blocks.length) {
+      indexToAddTo = 0;
+    }
+
+    blocks[indexToAddTo] += 1;
+  }
+
+  // capture current state
+  hasOccurredBefore = captureState();
+}
+
+console.log(`${limiter} total cycles`);
+
+</script>
+
+</body>
+</html>

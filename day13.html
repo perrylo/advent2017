@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+
+let data;
+fetch('day13.data')
+  .then(r => r.text())
+  .then(r => {
+    data = r;
+    //const [firewall, largestDepth] = parseData();
+    //part1(firewall, largestDepth);
+    part2();
+  });
+
+function parseData() {
+  // Transform data to array of layers, indexed by depth (representing scanner locations).
+  // Set initial state (all scanners are position 0, heading down, no packet position)
+  const f = [];
+  let largestDepth = 0;
+  const layers = data.split('\n').map(line => line.split(': '));
+
+  for (const layer of layers) {
+    const depth = parseInt(layer[0], 10);
+    const range = parseInt(layer[1], 10);
+    f[depth] = {
+      range,
+      scannerPos: 1,
+      d: 1
+    };
+    if (depth > largestDepth) {
+      largestDepth = depth;
+    }
+  }
+
+  return [f, largestDepth];
+}
+
+function part1(fw, largestDepth) {
+  const copy = JSON.parse(JSON.stringify(fw));
+
+  //console.table(fw);
+  // Iterate through all depths: move packet first, then remember if we got caught, then move scanners
+  const caughtDepths = [];
+  for (let i=0; i<largestDepth+1; ++i) {
+    if (copy[i] && copy[i].scannerPos === 1) {
+      caughtDepths.push(i);
+    }
+
+    // Move scanners
+    moveScanners(copy);
+  }
+
+  // Calc severity
+  let severity = 0;
+  for (const caught of caughtDepths) {
+    severity += caught*fw[caught].range;
+  }
+  //console.log(severity);
+
+  return caughtDepths;
+}
+
+function part2() {
+  let wait = 0;
+  let caught = true;
+  const [firewall, largestDepth] = parseData();
+  while (caught && wait<4000000) {
+    // do wait
+    ++wait;
+    moveScanners(firewall);
+
+    // send packet
+    const caughtDepths = part1(firewall, largestDepth);
+    caught = caughtDepths.length>0;
+    if (wait % 10000 == 0) {
+      console.log(`${wait} - no joy`);
+    }
+//console.log(wait, caughtDepths);
+  }
+
+  console.log(`wait: ${wait}`);
+}
+
+function moveScanners(layers) {
+//console.table(layers);
+  for (const layer of layers) {
+    if (layer) {
+      layer.scannerPos += layer.d;
+      if (layer.scannerPos === 1 || layer.scannerPos === layer.range) {
+        layer.d = -layer.d;
+      }
+    }
+  }
+//console.table(layers);
+}
+
+
+</script>
+
+
+</body>
+</html>

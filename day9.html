@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+
+fetch('day9.data')
+  .then(r => r.text())
+  .then(r => part1(r));
+
+function part1(data) {
+  // Deal with the cancels
+  const regCancel = /!./gi;
+  const data_noCancels = data.replace(regCancel, '');
+//console.log('No Cancels', data_noCancels);
+
+  // Deal with the garbage
+  const regGarbage = /<.*?>/gi;
+  const data_noGarbage = data_noCancels.replace(regGarbage, match => (match.length-2).toString());
+//console.log('No Garbage', data_noGarbage);
+
+  // Transform to big ass array
+  const regLeftBrace = /\{/gi;
+  const regRightBrace = /\}/gi;
+  const data_noBraces = data_noGarbage.replace(regLeftBrace, '[').replace(regRightBrace, ']');
+//console.log('No Braces', data_noBraces);
+
+  const bigArray = JSON.parse(data_noBraces);
+console.log(bigArray);
+
+  // Recursive score objects
+  function scoreArray(arr, points) {
+    let thisScore = points;
+    for (const child of arr) {
+      if (typeof child === 'object') {
+        thisScore += scoreArray(child, points+1);
+      }
+    }
+    return thisScore;
+  }
+  const totalScore = scoreArray(bigArray, 1);
+console.log('Total Score', totalScore);
+
+  // Part 2 - sum up garbage numbers
+  function sumGarbage(arr) {
+    let garbageSum = 0;
+    for (const child of arr) {
+      if (typeof child === 'number') {
+        garbageSum += child;
+      } else {
+        garbageSum += sumGarbage(child);
+      }
+    }
+    return garbageSum;
+  }
+  const totalGarbage = sumGarbage(bigArray);
+console.log('Total Garbage', totalGarbage);
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+const registers = {};
+let largestEver = 0;
+
+fetch('day8.data')
+  .then(r => r.text())
+  .then(r => part1(r));
+
+function part1(r) {
+  const instructions = parseData(r);
+
+  // Execute instructions
+  for (const instruction of instructions) {
+    let pass;
+    const code = `pass = getRegisterValueByName("${instruction.term1}") ${instruction.operator} ${instruction.term2} `;
+    eval(code);
+    //console.log(code, pass);
+
+    if (pass) {
+      setRegisterValueByName(instruction.name, instruction.delta);
+    }
+  }
+
+  // Find largest register
+  //console.log(registers);
+  let largest = 0;
+  for (const key of Object.keys(registers)) {
+    if (registers[key]>largest) {
+      largest = registers[key];
+    }
+  }
+  console.log(`Largest register value at the end of instructions: ${largest}`);
+  console.log(`Largest register value ever: ${largestEver}`);
+}
+
+function getRegisterValueByName(name) {
+  return registers[name] || 0;
+}
+
+function setRegisterValueByName(name, val) {
+  if (registers[name] === undefined) {
+    registers[name] = 0;
+  }
+  registers[name] += val;
+
+  if (registers[name]>largestEver) {
+    largestEver = registers[name];
+  }
+}
+
+function parseData(r) {
+  return r
+    .split('\n')
+    .map((line) => {
+      const words = line.split(' ');
+
+      const name = words[0];
+      const delta = words[1]==='inc' ? parseInt(words[2], 10) : -parseInt(words[2], 10);
+      const term1 = words[4];
+      const operator = words[5];
+      const term2 = words[6];
+      return {
+        name,
+        delta,
+        term1,
+        operator,
+        term2
+      };
+    });
+}
+
+</script>
+
+</body>
+</html>

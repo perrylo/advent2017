@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+let particles = [];
+fetch('day20.data')
+  .then(r => r.text())
+  .then(r => {
+    particles = r
+                  .split('\n')
+                  .map(line => line.split(', '))
+                  .map(pva => {
+                    const p = {};
+                    [p.x, p.y, p.z] = _parseNumberSet(pva[0]);
+                    [p.dx, p.dy, p.dz] = _parseNumberSet(pva[1]);
+                    [p.ddx, p.ddy, p.ddz] = _parseNumberSet(pva[2]);
+                    p.isSlowingDown = true;
+                    p.isMovingCloser = true;
+                    p.move = function() {
+                      this.prevVel = getManhattanVel(this);
+                      this.dx += this.ddx;
+                      this.dy += this.ddy;
+                      this.dz += this.ddz;
+                      this.currVel = getManhattanVel(this);
+
+                      this.prevDist = getManhattanDist(this);
+                      this.x += this.dx;
+                      this.y += this.dy;
+                      this.z += this.dz;
+                      this.currDist = getManhattanDist(this);
+                    }
+                    return p;
+                  });
+    function _parseNumberSet(set) {
+      return set.substring(3, set.length - 1).split(',').map(n => parseInt(n, 10));
+    }
+
+    for (let i=0; i<particles.length; ++i) {
+      particles[i].id = i;
+    }
+
+    part2();
+
+    /* part 1 - the particle that stays closest to origin IN THE LONG TERM is the one that moves away the slowest, ie has the lowest acceleration regardless of direction
+    let index = 0;
+    let m = Math.abs(particles[0].ddx) + Math.abs(particles[0].ddy) + Math.abs(particles[0].ddz);
+    for (let i=0; i<particles.length; ++i) {
+      const thism = Math.abs(particles[i].ddx) + Math.abs(particles[i].ddy) + Math.abs(particles[i].ddz);
+      if (thism < m) {
+        index = i;
+        m = thism;
+      }
+    }
+    console.log(`particle ${index} accelerates slowest: ${m}`);
+    */
+  });
+
+function part2(){
+  // assertion: when all particles are speeding away they can never collide with each other
+  // keep iterating through particle movements until they are all moving away
+  let limiter = 0;
+  let isAnyMovingCloser = true;
+  let isAnySlowingDown = true;
+console.log(particles);
+  while (isAnyMovingCloser && isAnySlowingDown && particles.length>1 && ++limiter<1000) {
+    isAnyMovingCloser = false;
+    isAnySlowingDown = false;
+    for (particle of particles) {
+      particle.move();
+      if (particle.prevVel >= particle.currVel) isAnySlowingDown = true;
+//console.log(particle.prevVel, '>', particle.currVel, particle.prevVel > particle.currVel);      
+      if (particle.prevDist >= particle.currDist) isAnyMovingCloser = true;
+//console.log(particle.prevDist, '>', particle.currDist, particle.prevDist > particle.currDist);
+    }
+    
+    // find collisions 
+    const particlesToDelete = [];
+    for (let i=particles.length-1; i>-1; --i) {
+      if (!particlesToDelete.includes(i)) {
+        for (let j=i-1; j>-1; --j) {
+          if (!particlesToDelete.includes(j)) {
+            if (particles[i].x === particles[j].x && particles[i].y === particles[j].y && particles[i].z === particles[j].z) {
+              if (!particlesToDelete.includes(i)) {
+                particlesToDelete.push(i);
+              }
+              particlesToDelete.push(j);
+            }
+          }
+        }
+      }
+    }
+
+    // Remove collided particles
+    for (const p of particlesToDelete) {
+      particles.splice(p, 1);
+    }
+console.log('---');
+console.log(particles);
+  }
+
+console.log('halted');
+}
+
+function getManhattanDist(p) {
+  return Math.abs(p.x) + Math.abs(p.y) + Math.abs(p.z);
+}
+
+function getManhattanVel(p) {
+  return Math.abs(p.dx) + Math.abs(p.dy) + Math.abs(p.dz);
+}
+
+</script>
+
+</body>
+</html>

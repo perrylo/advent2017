@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+//const setSize = 5;
+//const lengthsToHash = [3, 4, 1, 5];
+
+const setSize = 256;
+const lengthString = '212,254,178,237,2,0,1,54,167,92,117,125,255,61,159,164';
+const lengthsToHash = lengthString.split(',').map(i => parseInt(i, 10));
+
+
+// Create the set
+const set = [];
+for (let i=0; i<setSize; ++i) {
+  set[i] = i;
+}
+
+function part2(str) {
+  // Convert string input lengths to ASCII
+  const lengthsFromString = [...str].map(char => char.charCodeAt(0));
+
+  // Add standard suffix
+  const finalLengths = [...lengthsFromString, 17, 31, 73, 47, 23];
+
+  // Run lengths 64x
+  for (let i=0; i<64; ++i) {
+    part1(finalLengths);
+  }
+
+  // Convert sparse hash to dense hash (XOR every group of 16)
+  const denseSet = [];
+  let l=0;
+  while (set.length && ++l<50) {
+    const subset = set.splice(0, 16);
+    eval(`denseSet.push(${subset.join('^')})`);
+  }
+
+  // Transform each digit to hex to form final string hash
+  const finalHash = denseSet.map(n => toHex(n)).join('');
+  console.log(finalHash);
+
+  function toHex(n) {
+    const hex = n.toString(16);
+    return hex.length<2 ? `0${hex}` : hex;
+  }
+}
+
+
+let position = 0;
+let skipSize = 0;
+function part1(lengths) {
+  for (const length of lengths) {
+    //From starting position, get subset of length
+    let subset = [];
+    for (let i=0; i<length; ++i) {
+      subset[i] = getValueByIndex(position+i, set);
+    }
+
+    //Reverse subset
+    subset = subset.reverse();
+
+    //Replace original set with subset
+    for (let i=0; i<length; ++i) {
+      setValueByIndex(position+i, set, subset[i]);
+    }
+
+    //Set new position
+    position += (length+skipSize) % set.length;
+    if (position >= set.length) {
+      position -= set.length;
+    }
+
+    //Set new skip size
+    ++skipSize;
+  }
+  //console.log(set);
+}
+
+function getValueByIndex(index, arr) {
+  //const circularIndex = index>=arr.length ? index-arr.length : index;
+  const circularIndex = index % arr.length;
+  return arr[circularIndex];
+}
+
+function setValueByIndex(index, arr, value) {
+  //const circularIndex = index>=arr.length ? index-arr.length : index;
+  const circularIndex = index % arr.length;
+  arr[circularIndex] = value;
+}
+
+
+//part1(lengthsToHash);
+part2(lengthString);
+
+</script>
+
+</body>
+</html>

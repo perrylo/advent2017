@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+// abcde
+// baedc
+// ceadb
+
+
+//let dancers = 'abcde'.split('');
+let dancers = 'abcdefghijklmnop'.split('');
+
+fetch('day16.data')
+  .then(r => r.text())
+  .then(r => {
+    const dancemoves = r.split(',');
+    
+    //apply template a billion-1 times
+    for (let i=0; i<1000000000; ++i) {
+      part1(dancemoves);
+      if (i%1000000 === 0) {
+        console.log(`${i}... working`);
+      }
+    }
+console.log(`part 2: ${dancers.join('')}`);
+console.log(memoize);
+  });
+
+
+const memoize = {};
+function part1(dancemoves) {
+  const key = dancers.join('');
+  if (memoize[key]){
+    dancers = [...memoize[key]];
+  } else {
+    for (move of dancemoves) {
+      doMove(move);
+    }
+    memoize[key] = [...dancers];
+  }
+}
+
+function doMove(move) {
+  const moveType = move.charAt(0);
+  const moveVal = move.substr(1);
+  switch (moveType) {
+    case 's':
+      const count = parseInt(moveVal, 10);
+      const end = dancers.splice(dancers.length - count);
+      dancers = [...end, ...dancers];
+      break;
+    case 'x':
+      const pi = moveVal.split('/').map(v => parseInt(v, 10));
+      [dancers[pi[0]], dancers[pi[1]]] = [dancers[pi[1]], dancers[pi[0]]];
+      break;
+    case 'p':
+      const pn = moveVal.split('/').map(p => dancers.findIndex(e => e===p));
+      [dancers[pn[0]], dancers[pn[1]]] = [dancers[pn[1]], dancers[pn[0]]];
+      break;
+    default:
+      break;
+  }
+}
+
+</script>
+
+</body>
+</html>

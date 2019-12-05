@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+const virus = {
+  x:null,
+  y:null,
+  d:'n'
+}
+let grid;
+let causedInfectionCount = 0;
+
+fetch('day22.data')
+  .then(r => r.text())
+  .then(r => {
+    grid = r.split('\n').map(line => line.split(''));
+    virus.x = Math.floor(grid[0].length/2);
+    virus.y = Math.floor(grid.length/2);
+
+    for (let i=0; i<10000000; ++i) {
+      doVirusThingsPart2();
+      if (i%100000===0) {
+        console.log(`${i}... working`);
+      }
+    }
+
+//console.log(grid)
+//console.log(virus);
+console.log(`Bursts of infection: ${causedInfectionCount}`);
+  });
+
+
+function doVirusThingsPart2() {
+  // Determine new vector
+  if (!grid[virus.y]) grid[virus.y] = [];
+  switch (grid[virus.y][virus.x]) {
+    case 'w': //Weakened
+      // No change in direction
+      break;
+    case 'f': //Flagged
+      _reverseVirus();
+      break;
+    case '#': //Infected
+      _turnVirus(false);
+      break;
+    default: //Clean, '.' or undefined
+      _turnVirus(true);
+      break; 
+  }
+
+  function _turnVirus(isTurnLeft) {
+    switch (virus.d) {
+      case 'n':
+        virus.d = isTurnLeft ? 'w' : 'e';
+        break;
+      case 's':
+        virus.d = isTurnLeft ? 'e' : 'w';
+        break;
+      case 'e':
+        virus.d = isTurnLeft ? 'n' : 's';
+        break;
+      case 'w':
+        virus.d = isTurnLeft ? 's' : 'n';
+        break;
+      default:
+        virus.d = isTurnLeft ? 'w' : 'e';
+        break;
+    }
+  }
+
+  function _reverseVirus() {
+    switch (virus.d) {
+      case 'n':
+        virus.d = 's';
+        break;
+      case 's':
+        virus.d = 'n';
+        break;
+      case 'e':
+        virus.d = 'w';
+        break;
+      case 'w':
+        virus.d = 'e';
+        break;
+      default:
+        break;
+    }
+  }
+
+  // change node
+  switch (grid[virus.y][virus.x]) {
+    case 'w': //Weakened
+      ++causedInfectionCount;
+      grid[virus.y][virus.x] = '#';
+      break;
+    case 'f': //Flagged
+      grid[virus.y][virus.x] = '.';
+      break;
+    case '#': //Infected
+      grid[virus.y][virus.x] = 'f';
+      break;
+    default: //Clean
+      grid[virus.y][virus.x] = 'w';
+      break;
+  }
+
+  // Move
+  switch (virus.d) {
+    case 'n':
+      virus.y += -1;
+      break;
+    case 's':
+      virus.y += 1;
+      break;
+    case 'e':
+      virus.x += 1;
+      break;
+    case 'w':
+      virus.x += -1;
+      break;
+    default:
+      break;
+  }
+}
+
+
+
+
+function doVirusThingsPart1() {
+  // Determine new vector
+  let isTurnLeft = true;
+  if (!grid[virus.y]) grid[virus.y] = [];
+  if (grid[virus.y][virus.x] === '#') {
+    isTurnLeft = false;
+  }
+  switch (virus.d) {
+    case 'n':
+      virus.d = isTurnLeft ? 'w' : 'e';
+      break;
+    case 's':
+      virus.d = isTurnLeft ? 'e' : 'w';
+      break;
+    case 'e':
+      virus.d = isTurnLeft ? 'n' : 's';
+      break;
+    case 'w':
+      virus.d = isTurnLeft ? 's' : 'n';
+      break;
+    default:
+      virus.d = isTurnLeft ? 'w' : 'e';
+      break;
+  }
+
+  // (un)clean node
+  causedInfectionCount += grid[virus.y][virus.x] === '#' ? 0 : 1;
+  grid[virus.y][virus.x] = grid[virus.y][virus.x] === '#' ? '.' : '#';
+
+  // Move
+  switch (virus.d) {
+    case 'n':
+      virus.y += -1;
+      break;
+    case 's':
+      virus.y += 1;
+      break;
+    case 'e':
+      virus.x += 1;
+      break;
+    case 'w':
+      virus.x += -1;
+      break;
+    default:
+      break;
+  }
+}
+
+
+</script>
+
+</body>
+</html>

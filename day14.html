@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+const grid = part1('uugsqrei');
+part2();
+//console.table(grid.map(r => r.join('')));
+
+function part2() {
+  let regions = 0;
+  for (let row=0; row<grid.length; ++row) {
+    for (let col=0; col<grid[row].length; ++col) {
+      if (grid[row][col] === '1') {
+        ++regions;
+        removeRegion(row, col);
+      }
+    }
+  }
+
+  console.log(regions);
+}
+
+function removeRegion(row, col) {
+  grid[row][col] = '0';
+  if (grid[row-1] && grid[row-1][col]==='1') {
+    removeRegion(row-1, col);
+  }
+  if (grid[row+1] && grid[row+1][col]==='1') {
+    removeRegion(row+1, col);
+  }
+  if (grid[row][col-1] && grid[row][col-1]==='1') {
+    removeRegion(row, col-1);
+  }
+  if (grid[row][col+1] && grid[row][col+1]==='1') {
+    removeRegion(row, col+1);
+  }
+}
+
+
+function part1(inputKey) {
+  // Create row string from input
+  const rowStrings = [];
+  for (let i=0; i<128; ++i) {
+    rowStrings.push(`${inputKey}-${i}`);
+  }
+
+  // Transform rows to knot hashes
+  const rowKnotHashes = rowStrings.map(row => getKnotHash(row));
+
+  // Transform knot hashes to binary
+  const rowBinaries = rowKnotHashes.map(knotHash => strToBin(knotHash));
+
+  // Count the occurance of 1
+  //const sumOfAllCharacters = rowBinaries.reduce((acc, cur) => acc + cur.length, 0);
+  //const sumOfFilled = rowBinaries.reduce((acc, cur) => acc + countOnes(cur), 0);
+  //console.log(sumOfFilled);
+
+  return rowBinaries.map(binaryStr => binaryStr.split(''));
+}
+
+
+function countOnes(str) {
+  return str.split('').reduce((acc, cur) => acc + parseInt(cur, 10), 0);
+}
+
+
+function strToBin(str) {
+  return str.split('').map(hex => hexToBin(hex)).join('');
+}
+
+function hexToBin(hex) {
+  const bin = `0000${parseInt(hex, 16).toString(2)}`;
+  return bin.substr(bin.length-4);
+}
+
+
+function getKnotHash(str) {
+  // Create the set
+  const set = [];
+  for (let i=0; i<256; ++i) {
+    set[i] = i;
+  }
+
+  // Convert string input lengths to ASCII
+  const lengthsFromString = [...str].map(char => char.charCodeAt(0));
+
+  // Add standard suffix
+  const finalLengths = [...lengthsFromString, 17, 31, 73, 47, 23];
+
+  // Run lengths 64x
+  let position = 0;
+  let skipSize = 0;
+  for (let i=0; i<64; ++i) {
+    const n = twistKnot(finalLengths, position, skipSize, set);
+    position = n[0];
+    skipSize = n[1];
+  }
+
+  // Convert sparse hash to dense hash (XOR every group of 16)
+  const denseSet = [];
+  let l=0;
+  while (set.length && ++l<50) {
+    const subset = set.splice(0, 16);
+    eval(`denseSet.push(${subset.join('^')})`);
+  }
+
+  // Transform each digit to hex to form final string hash
+  const finalHash = denseSet.map(n => toHex(n)).join('');
+
+  function toHex(n) {
+    const hex = n.toString(16);
+    return hex.length<2 ? `0${hex}` : hex;
+  }
+
+  return finalHash;
+}
+
+
+function twistKnot(lengths, position, skipSize, set) {
+  let newposition;
+  for (const length of lengths) {
+    //From starting position, get subset of length
+    let subset = [];
+    for (let i=0; i<length; ++i) {
+      subset[i] = getValueByIndex(position+i, set);
+    }
+
+    //Reverse subset
+    subset = subset.reverse();
+
+    //Replace original set with subset
+    for (let i=0; i<length; ++i) {
+      setValueByIndex(position+i, set, subset[i]);
+    }
+
+    //Set new position
+    position += (length+skipSize) % set.length;
+    if (position >= set.length) {
+      position -= set.length;
+    }
+
+    //Set new skip size
+    ++skipSize;
+  }
+
+  return [position, skipSize];
+}
+
+function getValueByIndex(index, arr) {
+  const circularIndex = index % arr.length;
+  return arr[circularIndex];
+}
+
+function setValueByIndex(index, arr, value) {
+  const circularIndex = index % arr.length;
+  arr[circularIndex] = value;
+}
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

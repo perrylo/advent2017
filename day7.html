@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+fetch('day7.data')
+  .then(r => r.text())
+  .then(function(r) {
+    return r
+      .split('\n')
+      .map((item) => {
+        return {
+          name: item.match(/^(\w+).*?$/)[1],
+          weight: parseInt(item.match(/^.*?\((\d+)\).*?$/)[1], 10),
+          children: item.split('>')[1] ? (item.split('>')[1]).split(',').map(i => i.trim()) : []
+        };
+      });
+  })
+  .then(r => part2(r));
+
+
+/* part 1 - find the name that occurs nowhere else */
+function part1(data) {
+  let currentname;
+  for (const program of data) {
+    currentname = program.name;
+
+    let isChild = false;
+    for (const programcheck of data) {
+      if (programcheck.children && programcheck.children.includes(currentname)) {
+        isChild = true;
+        break;
+      }
+    }
+    if (!isChild) {
+      break;
+    }
+  }
+  console.log(currentname);
+}
+
+/* part 2 - check balance of towers */
+function part2(data) {
+  // Calc total weight of each program, for convenience
+  function getTotalWeight(program) {
+    let weight = program.weight;
+    for (const programName of program.children) {
+      const child = _findProgramByName(programName);
+      weight += getTotalWeight(child);
+    }
+
+    return weight;
+  }
+  for (const program of data) {
+    program.totalWeight = getTotalWeight(program);
+  }
+
+  // for each program check that its children all have the same weight
+  // follow the child whose weight differs from everyone else's
+  function checkBalance(program, isLog) {
+    const weights = {};
+    for (const child of program.children) {
+      if (isLog) console.log(_findProgramByName(child));
+      const childweight = (_findProgramByName(child)).totalWeight;
+      if (weights[childweight]) {
+        weights[childweight].push(child);
+      } else {
+        weights[childweight] = [child];
+      }
+    }
+    if (Object.keys(weights).length>1) {
+      for (const key of Object.keys(weights)) {
+        if (weights[key].length === 1) {
+          const child = _findProgramByName(weights[key][0]);
+          checkBalance(child, true);
+          console.log(weights, child);
+        }
+      }
+    }
+  }
+
+
+  function _findProgramByName(name) {
+    let i = 0;
+    let program;
+    while (!program && i<data.length) {
+      if (data[i].name === name) {
+        program = data[i];
+      }
+      ++i;
+    }
+    return program;
+  }
+
+  for (program of data) {
+    if (program.children.length){
+      checkBalance(program);
+    }
+  }
+}
+
+</script>
+
+</body>
+</html>

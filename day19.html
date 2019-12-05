@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+let grid;
+fetch('day19.data')
+  .then(r => r.text())
+  .then(r => {
+    grid = r.split('\n').map(line => line.split(''));
+    part1();
+  });
+
+function part1(){
+  const packet = {
+    x:0,
+    y:0,
+    dx:0,
+    dy:1
+  }
+  const letters = [];
+  let steps = 0;
+
+  //Find starting coords
+  packet.x = grid[0].findIndex(i => i!==' ');
+
+
+  //Proceed in vector recording all letters until +
+  //Find new vector perpendicular to previous vector
+  //Repeat to end
+  let limiter = 0;
+  while (grid[packet.y][packet.x] !== ' ' &&  ++limiter<100000) {
+    // Record letters we find
+    if (grid[packet.y][packet.x].match(/\w/)) {
+      letters.push(grid[packet.y][packet.x]);
+    }
+
+    // Move
+    packet.x += packet.dx;
+    packet.y += packet.dy;
+    ++steps;
+
+    // If we land on a + then determine new (perpendicular) vector 
+    if (grid[packet.y][packet.x] === '+') {
+      if (packet.dx !== 0) {
+        packet.dx = 0;
+        if (grid[packet.y-1] && grid[packet.y-1][packet.x]!==' ') {
+          packet.dy = -1;
+        } else if (grid[packet.y + 1] && grid[packet.y + 1][packet.x] !== ' ') {
+          packet.dy = 1;
+        }
+      } else {
+        packet.dy = 0;
+        if (grid[packet.y][packet.x - 1] !== ' ') {
+          packet.dx = -1;
+        } else if (grid[packet.y][packet.x + 1] !== ' ') {
+          packet.dx = 1;
+        }
+      }
+    }
+  }
+
+  console.log(letters.join(''));
+  console.log(`${steps} steps`);
+}
+
+</script>
+
+</body>
+</html>

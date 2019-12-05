@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+
+fetch('day12.data')
+  .then(r => r.text())
+  .then(r => part1(r));
+
+let data;
+function part1(r) {
+  data = transformToObj(r);
+
+  // determine groups
+  let currentIndex = 0;
+  let limiter = 0;
+  const groups = [];
+  while (currentIndex < data.length && ++limiter<2100) {
+    // Check if current element is already in a group, else start one
+    let isInGroup = false;
+    for (const group of groups) {
+      if (group.includes(currentIndex)) {
+        isInGroup = true;
+        break;
+      }
+    }
+
+    if (!isInGroup) {
+      const group = getGroup(currentIndex, []);
+      groups.push(group);
+    }
+
+    ++currentIndex;
+  }
+
+  console.log(groups);
+}
+
+// Find all members of a group
+function getGroup(index, group) {
+  for (const connection of data[index]) {
+    if (!group.includes(connection)) {
+      group.push(connection);
+      getGroup(connection, group);
+    }
+  }
+  return group;
+}
+
+
+function transformToObj(r) {
+  const lines = r.split('\n').map(line => line.split(' <-> '));
+  const obj = [];
+  for (const line of lines) {
+    obj.push(line[1].split(',').map(i => parseInt(i, 10)));
+  }
+  return obj;
+}
+
+</script>
+
+</body>
+</html>

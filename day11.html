@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+
+<script>
+fetch('day11.data')
+  .then(r => r.text())
+  .then(r => part1(r.split(',')));
+
+function part1(data) {
+  /*
+  Even X
+  n  = y-1
+  ne = x+1, y-1
+  se = x+1
+  s  = y+1
+  sw = x-1
+  nw = x-1, y-1
+
+  Odd X
+  n  = y-1
+  ne = x+1
+  se = x+1, y+1
+  s  = y+1
+  sw = x-1, y+1
+  nw = x-1
+  */
+
+  // Determine final location
+  const position = { x:0, y:0 };
+  for (const move of data) {
+    goDir(move, position);
+    calcDistToOrigin({ x:position.x, y:position.y });
+  }
+console.log(position);
+
+  const finalDist = calcDistToOrigin({ x:position.x, y:position.y });
+console.log(`Final distance: ${finalDist}`);
+console.log(`Furthest distance: ${furthest}`);
+}
+
+let furthest = 0;
+function calcDistToOrigin(pos) {
+  // Calc dist of final location and 0,0
+  let dist = 0;
+  let limiter=0;
+  while ((pos.x !== 0 || pos.y !==0) && ++limiter<2000) {
+    let dirToMove;
+    if (pos.y > 0) {
+      // go north
+      if (pos.x > 0) {
+        dirToMove = 'nw';
+      } else if(pos.x < 0) {
+        dirToMove = 'ne';
+      } else {
+        dirToMove = 'n';
+      }
+    } else {
+      // go south
+      if (pos.x > 0) {
+        dirToMove = 'sw';
+      } else if(pos.x < 0) {
+        dirToMove = 'se';
+      } else {
+        dirToMove = 's';
+      }
+    }
+    goDir(dirToMove, pos);
+    //console.log (dirToMove, position);
+    ++dist;
+  }
+
+  if (dist>furthest) {
+    furthest = dist;
+  }
+
+  return dist;
+}
+
+function goDir(dir, pos) {
+  if (pos.x%2===0) {
+    switch (dir) {
+      case 'n':
+        pos.y += -1;
+        break;
+      case 'ne':
+        pos.x += 1;
+        pos.y += -1;
+        break;
+      case 'se':
+        pos.x += 1;
+        break;
+      case 's':
+        pos.y += 1;
+        break;
+      case 'sw':
+        pos.x += -1;
+        break;
+      case 'nw':
+        pos.x += -1;
+        pos.y += -1;
+        break;
+      default:
+        break;
+    }
+  } else {
+    switch (dir) {
+      case 'n':
+        pos.y += -1;
+        break;
+      case 'ne':
+        pos.x += 1;
+        break;
+      case 'se':
+        pos.x += 1;
+        pos.y += 1;
+        break;
+      case 's':
+        pos.y += 1;
+        break;
+      case 'sw':
+        pos.x += -1;
+        pos.y += 1;
+        break;
+      case 'nw':
+        pos.x += -1;
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+</script>
+
+</body>
+</html>

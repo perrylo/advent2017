@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+
+//initialize registers
+const registers = {};
+'abcdefghijklmnopqrstuvwxyz'
+  .split('')
+  .map(letter => {
+    registers[letter] = 0;
+  });
+
+//initialize soundlog
+const soundlog = [];
+
+//get data
+let instructions;
+fetch('day18.data')
+  .then(r => r.text())
+  .then(r => {
+    instructions = r.split('\n');
+
+    part1();
+  });
+
+let isRCVHit = false;
+function part1() {
+  let i = 0;
+  let limiter = 0;
+  while (i>=0 && i<instructions.length && ++limiter<1400 && !isRCVHit) {
+    i = doInstruction(i);
+//console.log(`iteration: ${limiter}, next inst: ${i}`);
+  }
+}
+
+function doInstruction(i) {
+  [type, target, value] = instructions[i].split(' ');
+
+  const delta = parseInt(registers[value] !== undefined ? registers[value] : value, 10);
+
+  switch (type) {
+    case 'snd':
+      soundlog.push(registers[target]);
+      break;
+    case 'set':
+      registers[target] = delta;
+      break;
+    case 'add':
+      registers[target] += delta;
+      break;
+    case 'mul':
+      registers[target] *= delta;
+      break;
+    case 'mod':
+      registers[target] = registers[target] % delta;
+      break;
+    case 'rcv':
+      // What does tis do?
+      if (registers[target]) {
+        isRCVHit = true;
+        console.log(soundlog[soundlog.length-1]);
+      }
+      break;
+    case 'jgz':
+      // What does tis do?
+      if (registers[target]>0) {
+        return i+=delta;
+      }
+      break;
+    default:
+      break;
+  }
+  return i+1;
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+
+//initialize programs
+const program0 = {
+  id: 0,
+  registers: initRegister(0),
+  currI: 0,
+  prevI: null,
+  messages: [],
+  sendCount: 0
+};
+const program1 = {
+  id: 1,
+  registers: initRegister(1),
+  currI: 0,
+  prevI: null,
+  messages: [],
+  sendCount: 0
+};
+
+function initRegister(id) {
+  const registers = {};
+  'abcdefghijklmnopqrstuvwxyz'
+  //'a'
+    .split('')
+    .map(letter => {
+      registers[letter] = 0;
+    });
+  registers.p = id;
+  return registers;
+}
+
+//get data
+let instructions;
+fetch('day18.data')
+  .then(r => r.text())
+  .then(r => {
+    instructions = r.split('\n');
+
+    part2();
+    console.log(`program1 sendCount: ${program1.sendCount}`);
+  });
+
+function part2() {
+  let limiter = 0;
+  while ( ++limiter < 100000
+          && program0.currI >= 0 
+          && program0.currI < instructions.length 
+          && program1.currI >= 0 
+          && program1.currI < instructions.length 
+          && (program0.prevI !== program0.currI || program1.prevI !== program1.currI)
+        ) {
+    doInstruction(program0, program1.messages);
+    doInstruction(program1, program0.messages);
+    if (limiter%100000===0) {
+      console.log(`${limiter}... working`);
+      console.log(program0, program1);
+    }
+  }
+  console.log(program0, program1);
+}
+
+function doInstruction(program, targetQueue) {
+  program.prevI = program.currI;
+
+  const [type, target, value] = instructions[program.currI].split(' ');
+
+  const delta = parseInt(program.registers[value] !== undefined ? program.registers[value] : value, 10);
+
+  switch (type) {
+    case 'snd':
+      targetQueue.push(parseInt(program.registers[target]!==undefined?program.registers[target]:target, 10));
+      program.sendCount += 1;
+      break;
+    case 'rcv':
+      if (!program.messages.length) {
+        return;
+      }
+      program.registers[target] = program.messages.shift();
+      break;
+    case 'set':
+      program.registers[target] = delta;
+      break;
+    case 'add':
+      program.registers[target] += delta;
+      break;
+    case 'mul':
+      program.registers[target] *= delta;
+      break;
+    case 'mod':
+      program.registers[target] = program.registers[target] % delta;
+      break;
+    case 'jgz':
+      const jumpCheck = parseInt(program.registers[target] !== undefined ? program.registers[target] : target, 10);
+      if (jumpCheck>0) {
+        program.currI += delta;
+        return;
+      }
+      break;
+    default:
+      break;
+  }
+  program.currI += 1;
+}
+
+</script>
+
+</body>
+</html>

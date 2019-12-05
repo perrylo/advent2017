@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  
+<script>
+
+let parts;
+fetch('day24.data')
+  .then(r => r.text())
+  .then(r => {
+    parts = r.split('\n');
+
+    part1();
+  });
+
+function part1() {
+  // Get all solutions
+  const solutions = findParts('0', parts);
+  console.log(solutions);
+
+  // Part 1
+  getStrength('', 0, solutions);
+  bridges.sort((a, b) => a[0].length < b[0].length);
+  console.log(bridges);
+}
+
+// Find strongest 
+let bridges = [];
+function getStrength(chain, str, solutions) {
+  for (key of Object.keys(solutions)) {
+    const thisStr = key.split('/').map(v => parseInt(v, 10)).reduce((accumulator, currentValue) => accumulator + currentValue, str);
+    const thisChain = [...chain, key];
+
+    if (Object.keys(solutions[key]).length) {
+      getStrength(thisChain, thisStr, solutions[key]);
+    } else {
+      bridges.push([thisChain, thisStr]);
+    }
+  }
+}
+
+function findParts(pinCount, set) {
+  //Given current pin requirements find all parts
+  let foundIndices = [];
+  for (let i=0; i<set.length; ++i) {
+    const [a, b] = set[i].split('/');
+    if (a === pinCount || b === pinCount) {
+      foundIndices.push(i);
+    }
+  }
+
+  // Create solutions obj, and for each found part, recursively find others
+  let foundObj = {};
+  for (const i of foundIndices) {
+    const [a, b] = set[i].split('/');
+    foundObj[set[i]] = findParts(pinCount===a?b:a, [...set.slice(0,i), ...set.slice(i+1)]);
+  }
+
+  return foundObj;
+};
+
+</script>
+
+</body>
+</html>
